@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dog Draw 🎨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; text-align: center; padding: 20px;
+           background: linear-gradient(135deg, #a8edea, #fed6e3); }
+    h1 { margin-bottom: 10px; font-weight: 600; }
+    .section { background: #fff; padding: 20px; border-radius: 16px;
+               box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+               max-width: 700px; margin: auto; }
+    canvas { border: 2px solid #333; border-radius: 12px; background: transparent;
+             cursor: crosshair; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    #controls { margin: 10px 0; }
+    button { background: #6c5ce7; color: white; border: none; padding: 10px 20px;
+             border-radius: 30px; margin: 5px; cursor: pointer; font-weight: 600;
+             transition: transform 0.2s, background 0.3s; }
+    button:hover { background: #341f97; transform: scale(1.05); }
+    a { color: #341f97; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Dog Draw 🎨</h1>
+  <div class="section">
+    <canvas id="canvas" width="400" height="300"></canvas>
+    <div id="controls">
+      <label>Brush Color: <input type="color" id="color" value="#000000"></label>
+      <label>Brush Size: <input type="range" id="size" min="1" max="20" value="4"></label>
+    </div>
+    <button id="sendBtn">Send to Park 🐾</button>
+    <button id="clearBtn">Clear</button>
+    <p><a href="dogpark.html">Go to Dog Park 🏞️</a></p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let drawing = false;
+    function startDraw(e){ drawing = true; draw(e); }
+    function endDraw(){ drawing = false; ctx.beginPath(); }
+    function draw(e){
+      if(!drawing) return;
+      ctx.lineWidth = document.getElementById("size").value;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = document.getElementById("color").value;
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+    canvas.addEventListener("mousedown", startDraw);
+    canvas.addEventListener("mouseup", endDraw);
+    canvas.addEventListener("mousemove", draw);
+
+    function hasDrawing(){
+      const img = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      return img.some((v,i)=> i%4<3 && v!==0);
+    }
+
+    document.getElementById("sendBtn").onclick = () => {
+      if(!hasDrawing()){
+        alert("Draw something first!");
+        return;
+      }
+      const dataUrl = canvas.toDataURL("image/png");
+      let dogs = JSON.parse(localStorage.getItem("dogs") || "[]");
+      dogs.push(dataUrl);
+      localStorage.setItem("dogs", JSON.stringify(dogs));
+      alert("Dog sent to the park! 🐕");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    };
+
+    document.getElementById("clearBtn").onclick = () => {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    };
+  </script>
+</body>
+</html>
